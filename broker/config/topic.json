@@ -1,0 +1,26 @@
+[
+  {
+    "topic": "test_topic",
+    "lastedCommitLog": {
+      "fileName":  "00000000",
+      "offsetLimit": 1024000
+      "offset": 11
+    },
+    "queueList": [
+      {
+        "id": 1,
+        "minOffset": 111,
+        "currentOffset": 122,
+        "maxOffset": 133
+      },
+      {
+        "id": 2,
+        "minOffset": 111,
+        "currentOffset": 122,
+        "maxOffset": 133
+      }
+    ],
+    "createTime": 171484350000,
+    "updateTime": 171484350000
+  }
+]

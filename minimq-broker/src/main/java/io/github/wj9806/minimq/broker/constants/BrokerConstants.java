@@ -5,4 +5,10 @@ public class BrokerConstants {
     public static final String MINI_MQ_HOME = "mini.mq.home";
 
     public static final String BASE_STORE_PATH = "/broker/store/";
+
+    //1MB
+    public static final Integer COMMIT_LOG_DEFAULT_SIZE = 1024 * 1024;
+
+    //10S
+    public static final Integer DEFAULT_REFRESH_MQ_TOPIC_INTERVAL = 3;
 }

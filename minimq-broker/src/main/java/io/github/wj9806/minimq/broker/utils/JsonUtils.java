@@ -16,7 +16,7 @@ public class JsonUtils {
         }
     }
 
-    public static String toString(Object obj) {
+    public static String toJson(Object obj) {
         try {
             return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
         } catch (JsonProcessingException e) {

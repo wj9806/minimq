@@ -13,6 +13,7 @@
 target
 store
 .idea
+logs
 
 # Package Files #
 *.jar

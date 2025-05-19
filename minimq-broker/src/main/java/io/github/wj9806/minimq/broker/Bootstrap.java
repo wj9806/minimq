@@ -8,21 +8,26 @@ import io.github.wj9806.minimq.broker.model.TopicModel;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 public class Bootstrap {
 
     private static CommitLogAppender commitLogAppender;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         init();
 
-        commitLogAppender.appendMsg("test_topic", "hello world".getBytes());
+        for (int i = 0; i < 50000; i++) {
+            commitLogAppender.appendMsg("test_topic", ("this is content "+ i).getBytes());
+            TimeUnit.MILLISECONDS.sleep(1);
+        }
         System.out.println(commitLogAppender.readMsg("test_topic"));
     }
 
     private static void init() throws IOException {
         GlobalPropertiesLoader.LOADER.loadProperties();
         TopicInfoLoader.LOADER.loadProperties();
+        TopicInfoLoader.LOADER.startRefreshTopicInfoTask();
 
         commitLogAppender = new CommitLogAppender();
         Collection<TopicModel> topicModelList = CommonCache.getTopicModelMap().values();

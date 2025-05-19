@@ -1,5 +1,8 @@
 package io.github.wj9806.minimq.broker.utils;
 
+import io.github.wj9806.minimq.broker.cache.CommonCache;
+import io.github.wj9806.minimq.broker.constants.BrokerConstants;
+
 public class CommitLogFileNameUtils {
 
     public static String buildFirstCommitLogName() {
@@ -14,5 +17,10 @@ public class CommitLogFileNameUtils {
         fileIndex++;
 
         return String.format("%08d", fileIndex);
+    }
+
+    public static String buildCommitLogPath(String topic, String newFileName) {
+        return CommonCache.getGlobalProperties().getMqHome() +
+                BrokerConstants.BASE_STORE_PATH + topic + "/" + newFileName;
     }
 }

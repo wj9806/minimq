@@ -1,11 +1,13 @@
 package io.github.wj9806.minimq.broker.core;
 
 import io.github.wj9806.minimq.broker.cache.CommonCache;
-import io.github.wj9806.minimq.broker.constants.BrokerConstants;
 import io.github.wj9806.minimq.broker.model.CommitLogModel;
 import io.github.wj9806.minimq.broker.model.MessageModel;
 import io.github.wj9806.minimq.broker.model.TopicModel;
-import io.github.wj9806.minimq.broker.utils.CommitLogFileNameUtils;
+import io.github.wj9806.minimq.broker.utils.PutMessageLock;
+import io.github.wj9806.minimq.broker.utils.UnfairReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,27 +20,38 @@ import java.nio.channels.FileChannel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static io.github.wj9806.minimq.broker.constants.BrokerConstants.COMMIT_LOG_DEFAULT_SIZE;
+import static io.github.wj9806.minimq.broker.utils.CommitLogFileNameUtils.buildCommitLogPath;
+import static io.github.wj9806.minimq.broker.utils.CommitLogFileNameUtils.incrCommitLogFileName;
 
 public class MMapFileModel {
 
+    private String topic;
     private File file;
-    private int mappedSize;
     private FileChannel fileChannel;
     private MappedByteBuffer mappedByteBuffer;
+    private PutMessageLock putMessageLock;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MMapFileModel.class);
 
     /**
      * mmap访问文件
      */
-    public void loadFileInMMap(String topicName, int startOffset, int endOffset) throws IOException {
-
+    public void loadFileInMMap(String topicName, int startOffset, int size) throws IOException {
+        topic = topicName;
         String filePath = getLastedCommitLog(topicName);
+        doMMap(filePath, startOffset, size);
+        putMessageLock = new UnfairReentrantLock();
+    }
 
+    private void doMMap(String filePath, int startOffset, int size) throws IOException {
         this.file = new File(filePath);
         if (!file.exists()) throw new FileNotFoundException(filePath + " is invalid");
 
+
         fileChannel = new RandomAccessFile(file, "rw").getChannel();
-        mappedSize = endOffset - startOffset;
-        mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, startOffset, endOffset);
+        mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, startOffset, size);
     }
 
     /**
@@ -50,12 +63,13 @@ public class MMapFileModel {
             throw new NullPointerException(topicName + " is invalid");
 
         CommitLogModel commitLog = topicModel.getLastedCommitLog();
-        long diff = commitLog.getOffsetLimit() - commitLog.getOffset();
+        long diff = commitLog.countDiff();
 
         String fileName = null;
         if (Objects.equals(diff, 0)) {
             //写满
-            fileName = createNewCommitLog(topicName, commitLog);
+            CommitLogFilePath commitLogFilePath = createNewCommitLog(topicName, commitLog);
+            fileName = commitLogFilePath.getFilePath();
         } else if (diff > 0) {
             fileName = commitLog.getFileName();
         } else if (diff < 0) {
@@ -63,23 +77,25 @@ public class MMapFileModel {
                     commitLog.getOffsetLimit() + " < " + commitLog.getOffset());
         }
 
-        return CommonCache.getGlobalProperties().getMqHome() +
-                BrokerConstants.BASE_STORE_PATH + topicName + "/" + fileName;
+        return buildCommitLogPath(topic, fileName);
     }
 
-    private String createNewCommitLog(String topicName, CommitLogModel commitLog) {
-        String newFileName = CommitLogFileNameUtils.incrCommitLogFileName(commitLog.getFileName());
-        String path = CommonCache.getGlobalProperties().getMqHome() +
-                BrokerConstants.BASE_STORE_PATH + topicName + "/" + newFileName;
+    /**
+     * @return 返回新的CommitLog文件绝对路径
+     */
+    private CommitLogFilePath createNewCommitLog(String topicName, CommitLogModel commitLog) {
+        String newFileName = incrCommitLogFileName(commitLog.getFileName());
+        String path = buildCommitLogPath(topicName, newFileName);
         File newCommitLog = new File(path);
         try {
             if (!newCommitLog.createNewFile()) {
                 throw new RuntimeException("create new file failed: " + path);
             }
+            LOGGER.info("create new CommitLog, topic: {}, file: {}", topicName, newFileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return newFileName;
+        return new CommitLogFilePath(newFileName, path);
     }
 
     /**
@@ -100,17 +116,45 @@ public class MMapFileModel {
 
     /**
      * 写入文件
-     * @param content 要写入的内容
+     * @param messageModel 要写入的内容
      * @param force 是否强制刷盘
      */
-    public void write(MessageModel messageModel, boolean force) {
-        mappedByteBuffer.put(messageModel.toBytes());
-        if (force) {
-            mappedByteBuffer.force();
+    public void write(MessageModel messageModel, boolean force) throws IOException {
+        TopicModel topicModel = CommonCache.getTopicModelMap().get(topic);
+        if (topicModel == null) throw new NullPointerException(topic + " is invalid");
+
+        CommitLogModel commitLog = topicModel.getLastedCommitLog();
+        if (commitLog == null) throw new NullPointerException(topic + "'s commitlog is invalid");
+
+        putMessageLock.lock();
+        try {
+            ensureCapacity(messageModel);
+
+            byte[] content = messageModel.toBytes();
+            mappedByteBuffer.put(content);
+            commitLog.getOffset().addAndGet(content.length);
+            if (force) {
+                mappedByteBuffer.force();
+            }
+        } finally {
+            putMessageLock.unlock();
         }
     }
 
-    public void write(MessageModel messageModel) {
+    private void ensureCapacity(MessageModel messageModel) throws IOException {
+        TopicModel topicModel = CommonCache.getTopicModelMap().get(topic);
+        CommitLogModel commitLog = topicModel.getLastedCommitLog();
+        long offsetNum = commitLog.countDiff();
+        if (offsetNum < messageModel.getSize()) {
+            CommitLogFilePath commitLogFilePath = createNewCommitLog(topic, commitLog);
+            commitLog.setOffset(new AtomicLong(0));
+            commitLog.setOffsetLimit(new Long(COMMIT_LOG_DEFAULT_SIZE));
+            commitLog.setFileName(commitLogFilePath.getFileName());
+            doMMap(commitLogFilePath.getFilePath(), 0, COMMIT_LOG_DEFAULT_SIZE);
+        }
+    }
+
+    public void write(MessageModel messageModel) throws IOException {
         write(messageModel, false);
     }
 
@@ -163,5 +207,29 @@ public class MMapFileModel {
             return viewed(viewedBuffer);
     }
 
+    class CommitLogFilePath {
+        private String fileName;
+        private String filePath;
 
+        public CommitLogFilePath(String fileName, String filePath) {
+            this.fileName = fileName;
+            this.filePath = filePath;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getFilePath() {
+            return filePath;
+        }
+
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
+        }
+    }
 }

@@ -12,7 +12,7 @@ public class CommonCache {
 
     private static GlobalProperties globalProperties;
 
-    public static Map<String, TopicModel> topicModelMap;
+    public static List<TopicModel> topicModelList;
 
     public static GlobalProperties getGlobalProperties() {
         return globalProperties;
@@ -22,11 +22,15 @@ public class CommonCache {
         CommonCache.globalProperties = globalProperties;
     }
 
-    public static void setTopicModelMap(List<TopicModel> topicModelList) {
-        CommonCache.topicModelMap = topicModelList.stream().collect(Collectors.toMap(TopicModel::getTopic, Function.identity()));
+    public static void setTopicModelList(List<TopicModel> topicModelList) {
+        CommonCache.topicModelList = topicModelList;
+    }
+
+    public static List<TopicModel> getTopicModelList() {
+        return topicModelList;
     }
 
     public static Map<String, TopicModel> getTopicModelMap() {
-        return topicModelMap;
+        return topicModelList.stream().collect(Collectors.toMap(TopicModel::getTopic, Function.identity()));
     }
 }

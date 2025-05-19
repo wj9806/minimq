@@ -1,5 +1,7 @@
 package io.github.wj9806.minimq.broker.model;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class CommitLogModel {
 
     private String fileName;
@@ -7,7 +9,7 @@ public class CommitLogModel {
     //文件写入的最大上限
     private Long offsetLimit;
 
-    private Long offset;
+    private AtomicLong offset;
 
     public String getFileName() {
         return fileName;
@@ -17,11 +19,11 @@ public class CommitLogModel {
         this.fileName = fileName;
     }
 
-    public Long getOffset() {
+    public AtomicLong getOffset() {
         return offset;
     }
 
-    public void setOffset(Long offset) {
+    public void setOffset(AtomicLong offset) {
         this.offset = offset;
     }
 
@@ -31,5 +33,9 @@ public class CommitLogModel {
 
     public void setOffsetLimit(Long offsetLimit) {
         this.offsetLimit = offsetLimit;
+    }
+
+    public Long countDiff() {
+        return this.offsetLimit - this.offset.get();
     }
 }

@@ -6,13 +6,11 @@ public class Queue {
 
     private String fileName;
 
-    //当前consumerQueue保存的最早的数据记录offset
-    //消费过一段时间的数据做删除
-    private Long minOffset;
+    private Integer offsetLimit;
 
-    private Long currentOffset;
+    private Integer latestOffset;
 
-    private Long maxOffset;
+    private Integer lastOffset;
 
     public Integer getId() {
         return id;
@@ -30,27 +28,27 @@ public class Queue {
         this.fileName = fileName;
     }
 
-    public Long getMinOffset() {
-        return minOffset;
+    public Integer getOffsetLimit() {
+        return offsetLimit;
     }
 
-    public void setMinOffset(Long minOffset) {
-        this.minOffset = minOffset;
+    public void setOffsetLimit(Integer offsetLimit) {
+        this.offsetLimit = offsetLimit;
     }
 
-    public Long getCurrentOffset() {
-        return currentOffset;
+    public Integer getLatestOffset() {
+        return latestOffset;
     }
 
-    public void setCurrentOffset(Long currentOffset) {
-        this.currentOffset = currentOffset;
+    public void setLatestOffset(Integer latestOffset) {
+        this.latestOffset = latestOffset;
     }
 
-    public Long getMaxOffset() {
-        return maxOffset;
+    public Integer getLastOffset() {
+        return lastOffset;
     }
 
-    public void setMaxOffset(Long maxOffset) {
-        this.maxOffset = maxOffset;
+    public void setLastOffset(Integer lastOffset) {
+        this.lastOffset = lastOffset;
     }
 }

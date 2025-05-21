@@ -2,6 +2,7 @@ package io.github.wj9806.minimq.broker;
 
 import io.github.wj9806.minimq.broker.cache.CommonCache;
 import io.github.wj9806.minimq.broker.config.GlobalPropertiesLoader;
+import io.github.wj9806.minimq.broker.config.QueueOffsetLoader;
 import io.github.wj9806.minimq.broker.config.TopicInfoLoader;
 import io.github.wj9806.minimq.broker.core.CommitLogAppender;
 import io.github.wj9806.minimq.broker.core.data.Topic;
@@ -28,6 +29,8 @@ public class Bootstrap {
         GlobalPropertiesLoader.LOADER.loadProperties();
         TopicInfoLoader.LOADER.loadProperties();
         TopicInfoLoader.LOADER.startRefreshTopicInfoTask();
+        QueueOffsetLoader.LOADER.loadProperties();
+        QueueOffsetLoader.LOADER.startRefreshQueueOffsetTask();
 
         commitLogAppender = new CommitLogAppender();
         Collection<Topic> topicList = CommonCache.getTopicMap().values();

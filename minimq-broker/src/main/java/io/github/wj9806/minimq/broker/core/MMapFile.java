@@ -40,7 +40,7 @@ public class MMapFile {
      * mmap访问文件
      */
     public void loadFileInMMap(String topicName, int startOffset, int size) throws IOException {
-        topicName = topicName;
+        this.topicName = topicName;
         String filePath = getLastedCommitLog(topicName);
         doMMap(filePath, startOffset, size);
         putMessageLock = new UnfairReentrantLock();

@@ -11,4 +11,6 @@ public class BrokerConstants {
 
     //10S
     public static final Integer DEFAULT_REFRESH_MQ_TOPIC_INTERVAL = 3;
+
+    public static final Integer DEFAULT_REFRESH_QUEUE_OFFSET_INTERVAL = 1;
 }

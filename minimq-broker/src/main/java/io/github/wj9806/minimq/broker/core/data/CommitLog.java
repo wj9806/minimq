@@ -1,15 +1,15 @@
-package io.github.wj9806.minimq.broker.model;
+package io.github.wj9806.minimq.broker.core.data;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class CommitLogModel {
+public class CommitLog {
 
     private String fileName;
 
     //文件写入的最大上限
     private Long offsetLimit;
 
-    private AtomicLong offset;
+    private AtomicInteger offset;
 
     public String getFileName() {
         return fileName;
@@ -19,11 +19,11 @@ public class CommitLogModel {
         this.fileName = fileName;
     }
 
-    public AtomicLong getOffset() {
+    public AtomicInteger getOffset() {
         return offset;
     }
 
-    public void setOffset(AtomicLong offset) {
+    public void setOffset(AtomicInteger offset) {
         this.offset = offset;
     }
 

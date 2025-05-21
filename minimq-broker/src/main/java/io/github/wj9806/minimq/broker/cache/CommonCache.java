@@ -1,7 +1,7 @@
 package io.github.wj9806.minimq.broker.cache;
 
 import io.github.wj9806.minimq.broker.config.GlobalProperties;
-import io.github.wj9806.minimq.broker.model.TopicModel;
+import io.github.wj9806.minimq.broker.core.data.Topic;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class CommonCache {
 
     private static GlobalProperties globalProperties;
 
-    public static List<TopicModel> topicModelList;
+    public static List<Topic> topicList;
 
     public static GlobalProperties getGlobalProperties() {
         return globalProperties;
@@ -22,15 +22,15 @@ public class CommonCache {
         CommonCache.globalProperties = globalProperties;
     }
 
-    public static void setTopicModelList(List<TopicModel> topicModelList) {
-        CommonCache.topicModelList = topicModelList;
+    public static void setTopicList(List<Topic> topicList) {
+        CommonCache.topicList = topicList;
     }
 
-    public static List<TopicModel> getTopicModelList() {
-        return topicModelList;
+    public static List<Topic> getTopicList() {
+        return topicList;
     }
 
-    public static Map<String, TopicModel> getTopicModelMap() {
-        return topicModelList.stream().collect(Collectors.toMap(TopicModel::getTopic, Function.identity()));
+    public static Map<String, Topic> getTopicMap() {
+        return topicList.stream().collect(Collectors.toMap(Topic::getTopic, Function.identity()));
     }
 }

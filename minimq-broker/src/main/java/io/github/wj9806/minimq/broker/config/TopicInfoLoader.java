@@ -3,7 +3,7 @@ package io.github.wj9806.minimq.broker.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.wj9806.minimq.broker.cache.CommonCache;
 import io.github.wj9806.minimq.broker.constants.BrokerConstants;
-import io.github.wj9806.minimq.broker.model.TopicModel;
+import io.github.wj9806.minimq.broker.core.data.Topic;
 import io.github.wj9806.minimq.broker.utils.JsonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,9 +34,9 @@ public class TopicInfoLoader {
         filePath = topicJsonPath;
         try {
             String json = FileUtils.readFileToString(new File(topicJsonPath));
-            List<TopicModel> modelList = JsonUtils.parse(json, new TypeReference<List<TopicModel>>() {
+            List<Topic> topicList = JsonUtils.parse(json, new TypeReference<List<Topic>>() {
             });
-            CommonCache.setTopicModelList(modelList);
+            CommonCache.setTopicList(topicList);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -48,8 +48,8 @@ public class TopicInfoLoader {
             do {
                 try {
                     TimeUnit.SECONDS.sleep(DEFAULT_REFRESH_MQ_TOPIC_INTERVAL);
-                    List<TopicModel> topicModelList = CommonCache.getTopicModelList();
-                    FileUtils.writeStringToFile(new File(filePath), JsonUtils.toJson(topicModelList));
+                    List<Topic> topicList = CommonCache.getTopicList();
+                    FileUtils.writeStringToFile(new File(filePath), JsonUtils.toJson(topicList));
                     LOGGER.info("refresh topic info success");
                 } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e);

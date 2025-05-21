@@ -4,7 +4,7 @@ import io.github.wj9806.minimq.broker.cache.CommonCache;
 import io.github.wj9806.minimq.broker.config.GlobalPropertiesLoader;
 import io.github.wj9806.minimq.broker.config.TopicInfoLoader;
 import io.github.wj9806.minimq.broker.core.CommitLogAppender;
-import io.github.wj9806.minimq.broker.model.TopicModel;
+import io.github.wj9806.minimq.broker.core.data.Topic;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -30,10 +30,10 @@ public class Bootstrap {
         TopicInfoLoader.LOADER.startRefreshTopicInfoTask();
 
         commitLogAppender = new CommitLogAppender();
-        Collection<TopicModel> topicModelList = CommonCache.getTopicModelMap().values();
-        for (TopicModel topicModel : topicModelList) {
-            String topic = topicModel.getTopic();
-            commitLogAppender.prepareMMap(topic);
+        Collection<Topic> topicList = CommonCache.getTopicMap().values();
+        for (Topic topic : topicList) {
+            String topicName = topic.getTopic();
+            commitLogAppender.prepareMMap(topicName);
         }
 
     }

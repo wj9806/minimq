@@ -1,14 +1,14 @@
-package io.github.wj9806.minimq.broker.model;
+package io.github.wj9806.minimq.broker.core.data;
 
 import java.util.List;
 
-public class TopicModel {
+public class Topic {
 
     private String topic;
 
-    private CommitLogModel lastedCommitLog;
+    private CommitLog lastedCommitLog;
 
-    private List<QueueModel> queueList;
+    private List<Queue> queueList;
 
     private Long createTime;
 
@@ -22,11 +22,11 @@ public class TopicModel {
         this.topic = topic;
     }
 
-    public List<QueueModel> getQueueList() {
+    public List<Queue> getQueueList() {
         return queueList;
     }
 
-    public void setQueueList(List<QueueModel> queueList) {
+    public void setQueueList(List<Queue> queueList) {
         this.queueList = queueList;
     }
 
@@ -46,11 +46,11 @@ public class TopicModel {
         this.updateTime = updateTime;
     }
 
-    public CommitLogModel getLastedCommitLog() {
+    public CommitLog getLastedCommitLog() {
         return lastedCommitLog;
     }
 
-    public void setLastedCommitLog(CommitLogModel lastedCommitLog) {
+    public void setLastedCommitLog(CommitLog lastedCommitLog) {
         this.lastedCommitLog = lastedCommitLog;
     }
 }

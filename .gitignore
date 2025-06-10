@@ -15,6 +15,7 @@ store
 .idea
 logs
 commitlog
+consumequeue
 
 # Package Files #
 *.jar

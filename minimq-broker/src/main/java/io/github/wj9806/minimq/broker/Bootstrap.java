@@ -5,6 +5,7 @@ import io.github.wj9806.minimq.broker.config.GlobalPropertiesLoader;
 import io.github.wj9806.minimq.broker.config.QueueOffsetLoader;
 import io.github.wj9806.minimq.broker.config.TopicInfoLoader;
 import io.github.wj9806.minimq.broker.core.CommitLogAppender;
+import io.github.wj9806.minimq.broker.core.QueueAppender;
 import io.github.wj9806.minimq.broker.core.data.Topic;
 
 import java.io.IOException;
@@ -13,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Bootstrap {
 
-    private static CommitLogAppender commitLogAppender;
+    private static final CommitLogAppender commitLogAppender = CommitLogAppender.COMMIT_LOG_APPENDER;
+
+    private static final QueueAppender queueAppender = QueueAppender.QUEUE_APPENDER;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         init();
@@ -32,11 +35,11 @@ public class Bootstrap {
         QueueOffsetLoader.LOADER.loadProperties();
         QueueOffsetLoader.LOADER.startRefreshQueueOffsetTask();
 
-        commitLogAppender = new CommitLogAppender();
         Collection<Topic> topicList = CommonCache.getTopicMap().values();
         for (Topic topic : topicList) {
             String topicName = topic.getTopic();
             commitLogAppender.prepareMMap(topicName);
+            queueAppender.prepareQueue(topicName);
         }
 
     }

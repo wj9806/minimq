@@ -6,6 +6,8 @@ public class BrokerConstants {
 
     public static final String BASE_STORE_PATH = "/broker/commitlog/";
 
+    public static final String BASE_QUEUE_PATH = "/broker/consumequeue/";
+
     //1MB
     public static final Integer COMMIT_LOG_DEFAULT_SIZE = 1024 * 1024;
 

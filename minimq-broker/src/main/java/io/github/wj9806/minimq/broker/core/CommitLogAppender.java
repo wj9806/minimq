@@ -10,6 +10,11 @@ public class CommitLogAppender {
 
     private final MMapFileManager mMapFileManager = new MMapFileManager();
 
+    public static final CommitLogAppender COMMIT_LOG_APPENDER = new CommitLogAppender();
+
+    private CommitLogAppender() {
+    }
+
     public void prepareMMap(String topicName) throws IOException {
         MMapFile mMapFile = new MMapFile();
         mMapFile.loadFileInMMap(topicName, 0, COMMIT_LOG_DEFAULT_SIZE);

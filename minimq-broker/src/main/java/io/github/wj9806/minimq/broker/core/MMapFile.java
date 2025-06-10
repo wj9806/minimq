@@ -24,8 +24,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.github.wj9806.minimq.broker.constants.BrokerConstants.COMMIT_LOG_DEFAULT_SIZE;
-import static io.github.wj9806.minimq.broker.utils.CommitLogFileNameUtils.buildCommitLogPath;
-import static io.github.wj9806.minimq.broker.utils.CommitLogFileNameUtils.incrCommitLogFileName;
+import static io.github.wj9806.minimq.broker.utils.LogFileNameUtils.buildCommitLogPath;
+import static io.github.wj9806.minimq.broker.utils.LogFileNameUtils.incrFileName;
 
 public class MMapFile {
 
@@ -41,7 +41,7 @@ public class MMapFile {
      */
     public void loadFileInMMap(String topicName, int startOffset, int size) throws IOException {
         this.topicName = topicName;
-        String filePath = getLastedCommitLog(topicName);
+        String filePath = getLatestCommitLog(topicName);
         doMMap(filePath, startOffset, size);
         putMessageLock = new UnfairReentrantLock();
     }
@@ -58,7 +58,7 @@ public class MMapFile {
     /**
      * 获取最新的CommitLog
      */
-    private String getLastedCommitLog(String topicName) {
+    private String getLatestCommitLog(String topicName) {
         Topic topic = CommonCache.getTopicMap().get(topicName);
         if (topic == null)
             throw new NullPointerException(topicName + " is invalid");
@@ -85,7 +85,7 @@ public class MMapFile {
      * @return 返回新的CommitLog文件绝对路径
      */
     private CommitLogFilePath createNewCommitLog(String topicName, CommitLog commitLog) {
-        String newFileName = incrCommitLogFileName(commitLog.getFileName());
+        String newFileName = incrFileName(commitLog.getFileName());
         String path = buildCommitLogPath(topicName, newFileName);
         File newCommitLog = new File(path);
         try {
